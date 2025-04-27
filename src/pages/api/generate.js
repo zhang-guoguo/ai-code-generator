@@ -1,8 +1,10 @@
 // pages/api/generate.js
 import { generateCode } from '../../utils/aiClient';
+import { formatCode } from '../../utils/codeFormatter';
 import { extractCodeFromMarkdown } from '../../utils/markdownUtils';
 import { createFolder, createFile } from '../../utils/fileManager';
 import { executeCode } from '../../utils/codeExecutor';
+import { logExecutionResult } from '../../utils/codeLog';
 import path from 'path';
 
 export default async function handler(req, res) {
@@ -11,19 +13,21 @@ export default async function handler(req, res) {
     }
     console.log("\n")
     console.log("******************** 请求体 **************************\n",req.body)
-    const { prompt, folderName, fileName } = req.body;
+    const { prompt, language } = req.body;
+    const fileName = `${language}-code`;
+    const folderName = "aiMakeFolder";
 
-    if (!prompt || !folderName || !fileName) {
-        return res.status(400).json({ error: '缺少必要参数: prompt, folderName, fileName' });
+    if (!prompt || !language) {
+        return res.status(400).json({ error: '缺少必要参数: prompt, language' });
     }
 
     try {
-        // 生成代码
-        const generatedCode = await generateCode(prompt);
+        // 生成代码时传递语言
+        const generatedCode = await generateCode(`${prompt} 使用 ${language} 编写`);
 
         // 从 Markdown 中提取代码
         const extractedCode = extractCodeFromMarkdown(generatedCode);
-
+        // const formattedCode = formatCode(extractedCode, language === 'python' ? 'python' : 'babel');
         // 创建文件夹
         const folderPath = path.join(process.cwd(), folderName);
         await createFolder(folderPath);
@@ -42,6 +46,12 @@ export default async function handler(req, res) {
             }
             executionResult = { success: true, output: result };
             res.status(200).json(executionResult);
+            if (error) {
+                logExecutionResult(filePath, `Error: ${error}`);
+                return res.status(500).json({ success: false, error });
+            }
+            logExecutionResult(filePath, `Output: ${result}`);
+            res.status(200).json({ success: true, output: result });
         });
 
         // 注意：exec是异步的，上面的res在回调中调用，但可能无法正确返回结果

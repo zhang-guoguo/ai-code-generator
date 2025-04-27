@@ -8,8 +8,8 @@
 export function extractCodeFromMarkdown(markdownContent) {
     if (!markdownContent) return '';
 
-    // 匹配 ```language\n...code...``` 格式的代码块
-    const codeBlockRegex = /```(?:javascript|js|JavaScript（Node.js 或浏览器）|)\n([\s\S]*?)```/g;
+    // 匹配 ``` 开头和结尾之间的代码块内容，不包括 ``` 本身所在行
+    const codeBlockRegex = /```(?:[a-zA-Z0-9-]*)\n([\s\S]*?)\n```/g;
     const matches = [...markdownContent.matchAll(codeBlockRegex)];
     
     if (matches.length === 0) {
@@ -20,4 +20,4 @@ export function extractCodeFromMarkdown(markdownContent) {
     // 提取第一个代码块的内容
     const code = matches[0][1].trim();
     return code;
-} 
+}

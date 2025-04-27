@@ -5,10 +5,10 @@ import fs from 'fs-extra';
 export async function createFolder(folderPath) {
     try {
         // 如果文件夹存在，先删除
-        if (await fs.pathExists(folderPath)) {
-            await fs.remove(folderPath);
-            console.log(`🗑️  已删除旧文件夹: ${folderPath}`);
-        }
+        // if (await fs.pathExists(folderPath)) {
+        //     await fs.remove(folderPath);
+        //     console.log(`🗑️  已删除旧文件夹: ${folderPath}`);
+        // }
         
         await fs.ensureDir(folderPath);
         console.log(`✅ 文件夹已创建: ${folderPath}`);
@@ -20,6 +20,10 @@ export async function createFolder(folderPath) {
 
 export async function createFile(filePath, content) {
     try {
+        if (await fs.existsSync(filePath)) {
+            await fs.remove(filePath);
+            console.log(`✅ 🗑️ 已删除旧文件: ${filePath}`);
+        }
         await fs.writeFile(filePath, content, 'utf8');
         console.log(`✅ 文件已创建: ${filePath}`);
     } catch (error) {

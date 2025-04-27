@@ -8,7 +8,7 @@ const API_KEY = process.env.OPENAI_API_KEY;
 // 创建代理配置
 const httpsAgent = new HttpsProxyAgent('http://127.0.0.1:7890');
 
-export async function generateCode(prompt) {
+export async function generateCode(prompt, language) {
     try {
         const requestData = {
             model: 'gpt-4.1',
@@ -19,7 +19,7 @@ export async function generateCode(prompt) {
                 },
                 {
                     role: "user",
-                    content: prompt
+                    content: `请用 ${language} 编写以下功能: ${prompt}`
                 }
             ],
             temperature: 0.7,

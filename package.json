@@ -13,6 +13,7 @@
     "fs-extra": "^11.3.0",
     "https-proxy-agent": "^7.0.6",
     "next": "15.3.1",
+    "prettier": "^3.5.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
