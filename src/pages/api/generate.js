@@ -13,13 +13,25 @@ export default async function handler(req, res) {
     }
     console.log("\n")
     console.log("******************** 请求体 **************************\n",req.body)
-    const { prompt, language } = req.body;
-    const fileName = `${language}-code`;
-    const folderName = "aiMakeFolder";
+    const { prompt, language, reqPath, fileName: reqFileName } = req.body;
+    const folderName = "aiMakeFolder"; 
+    const fileName = reqFileName || `${language}-code`;
 
     if (!prompt || !language) {
-        return res.status(400).json({ error: '缺少必要参数: prompt, language' });
+        return res.status(400).json({ error: '缺少必要参数: prompt 或 language' });
     }
+
+    // 根据 language 动态设置文件后缀
+    const fileExtensionMap = {
+        javascript: 'js',
+        python: 'py',
+        ruby: 'rb',
+        java: 'java',
+        csharp: 'cs',
+        go: 'go',
+        php: 'php'
+    };
+    const fileExtension = fileExtensionMap[language.toLowerCase()] || 'txt'; // 默认使用 .txt
 
     try {
         // 生成代码时传递语言
@@ -28,12 +40,14 @@ export default async function handler(req, res) {
         // 从 Markdown 中提取代码
         const extractedCode = extractCodeFromMarkdown(generatedCode);
         // const formattedCode = formatCode(extractedCode, language === 'python' ? 'python' : 'babel');
+        
         // 创建文件夹
-        const folderPath = path.join(process.cwd(), folderName);
+        const basePath = reqPath || process.cwd();
+        const folderPath = path.join(basePath, folderName);
         await createFolder(folderPath);
 
         // 创建文件并写入代码
-        const filePath = path.join(folderPath, `${fileName}.js`);
+        const filePath = path.join(folderPath, `${fileName}.${fileExtension}`);
         await createFile(filePath, extractedCode);
 
         // 执行代码
